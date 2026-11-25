@@ -545,11 +545,11 @@
       100% { transform: translateX(16px); }
     }
 
-    /* Bottom Two Bow Buttons */
+    /* Bottom Two Bow Buttons (Stacked 1 Column) */
     .bow-controls {
       display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 10px;
+      grid-template-columns: 1fr;
+      gap: 8px;
       padding-top: 6px;
       flex-shrink: 0;
       z-index: 20;
@@ -557,8 +557,8 @@
 
     .bow-btn {
       position: relative;
-      height: 82px;
-      border-radius: 16px;
+      height: 60px;
+      border-radius: 14px;
       border: 2px solid rgba(255, 255, 255, 0.15);
       background: linear-gradient(180deg, rgba(48, 28, 16, 0.95) 0%, rgba(24, 14, 8, 0.98) 100%);
       color: var(--ivory);
@@ -566,7 +566,7 @@
       flex-direction: column;
       align-items: center;
       justify-content: center;
-      gap: 3px;
+      gap: 2px;
       touch-action: none;
       cursor: pointer;
       box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
@@ -588,21 +588,21 @@
     }
 
     .bow-btn.active.inner {
-      transform: scale(0.97);
+      transform: scale(0.98);
       background: linear-gradient(180deg, #b45309 0%, #78350f 100%);
       border-color: #fde047;
       box-shadow: 0 0 22px var(--amber-glow), inset 0 0 12px rgba(255, 255, 255, 0.2);
     }
 
     .bow-btn.active.outer {
-      transform: scale(0.97);
+      transform: scale(0.98);
       background: linear-gradient(180deg, #0284c7 0%, #075985 100%);
       border-color: #bae6fd;
       box-shadow: 0 0 22px rgba(56, 189, 248, 0.55), inset 0 0 12px rgba(255, 255, 255, 0.2);
     }
 
     .bow-btn-title {
-      font-size: 15px;
+      font-size: 14.5px;
       font-weight: 800;
       letter-spacing: 0.4px;
       display: flex;
@@ -615,13 +615,13 @@
     .bow-btn.active .bow-btn-title { color: #ffffff; }
 
     .bow-btn-sub {
-      font-size: 12px;
+      font-size: 11.5px;
       opacity: 0.85;
       font-weight: 500;
     }
 
     .bow-btn-hint {
-      font-size: 10px;
+      font-size: 9.5px;
       opacity: 0.6;
       text-transform: uppercase;
       letter-spacing: 0.6px;
@@ -788,7 +788,7 @@
       </div>
     </main>
 
-    <!-- Bottom: Two Buttons for Inner vs Outer String Bowing -->
+    <!-- Bottom: Two Buttons Stacked Vertically -->
     <footer class="bow-controls">
       <button class="bow-btn inner selected" id="bowInnerBtn" type="button">
         <div class="bow-btn-title">◀ KÉO DÂY TRONG</div>
