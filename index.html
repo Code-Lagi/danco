@@ -1,0 +1,1394 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Đàn Cò (Đàn Nhị) - Nhạc Dân Tộc</title>
+  <style>
+    :root {
+      --bg-dark: #140c08;
+      --wood-dark: #2a160c;
+      --wood-mid: #472514;
+      --wood-light: #6b3a20;
+      --gold: #eab308;
+      --gold-soft: #fde68a;
+      --ivory: #f8f1e5;
+      --crimson: #dc2626;
+      --amber-glow: rgba(245, 158, 11, 0.45);
+      --inner-color: #f59e0b;
+      --outer-color: #38bdf8;
+    }
+
+    * {
+      box-sizing: border-box;
+      -webkit-tap-highlight-color: transparent;
+      user-select: none;
+      -webkit-user-select: none;
+      -webkit-touch-callout: none;
+    }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100dvh;
+      overflow: hidden;
+      overscroll-behavior: none;
+      touch-action: none;
+      background: radial-gradient(circle at 50% 35%, #2c1810 0%, #140c08 75%, #090503 100%);
+      color: var(--ivory);
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    }
+
+    .app {
+      display: flex;
+      flex-direction: column;
+      width: 100%;
+      max-width: 520px;
+      height: 100dvh;
+      margin: 0 auto;
+      padding: env(safe-area-inset-top, 6px) 10px env(safe-area-inset-bottom, 10px);
+      position: relative;
+    }
+
+    /* Header */
+    .header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 4px 4px 6px;
+      gap: 6px;
+      z-index: 20;
+      flex-shrink: 0;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .brand-title {
+      font-size: 16px;
+      font-weight: 700;
+      letter-spacing: 0.3px;
+      color: var(--gold-soft);
+      line-height: 1.1;
+    }
+
+    .brand-sub {
+      font-size: 11px;
+      color: #bfa58a;
+    }
+
+    .header-controls {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .pill-btn {
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(253, 230, 138, 0.25);
+      color: var(--ivory);
+      border-radius: 999px;
+      padding: 5px 10px;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pill-btn.active {
+      background: rgba(234, 179, 8, 0.22);
+      border-color: var(--gold);
+      color: var(--gold-soft);
+    }
+
+    .icon-btn {
+      width: 30px;
+      height: 30px;
+      border-radius: 50%;
+      background: rgba(255, 255, 255, 0.08);
+      border: 1px solid rgba(253, 230, 138, 0.25);
+      color: var(--gold-soft);
+      font-weight: 700;
+      font-size: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      cursor: pointer;
+    }
+
+    /* Live Note HUD */
+    .hud-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      background: rgba(0, 0, 0, 0.38);
+      border: 1px solid rgba(255, 255, 255, 0.09);
+      border-radius: 12px;
+      padding: 5px 12px;
+      margin-bottom: 6px;
+      flex-shrink: 0;
+      min-height: 36px;
+    }
+
+    .hud-status {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 12.5px;
+    }
+
+    .status-dot {
+      width: 9px;
+      height: 9px;
+      border-radius: 50%;
+      background: #574538;
+      flex-shrink: 0;
+      transition: background 0.1s, box-shadow 0.1s;
+    }
+
+    .status-dot.playing-inner {
+      background: var(--inner-color);
+      box-shadow: 0 0 10px var(--inner-color);
+    }
+
+    .status-dot.playing-outer {
+      background: var(--outer-color);
+      box-shadow: 0 0 10px var(--outer-color);
+    }
+
+    .hud-note {
+      font-size: 17px;
+      font-weight: 800;
+      color: var(--gold-soft);
+      min-width: 72px;
+      text-align: right;
+    }
+
+    /* Center Instrument Area */
+    .instrument-stage {
+      flex: 1;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: stretch;
+    }
+
+    /* Top Tuning Pegs & Khữ Nhị */
+    .headstock {
+      width: 100%;
+      height: 32px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      pointer-events: none;
+    }
+
+    .peg {
+      position: absolute;
+      width: 44px;
+      height: 11px;
+      background: linear-gradient(180deg, #7c4728 0%, #3e1f0e 100%);
+      border: 1px solid rgba(253, 230, 138, 0.3);
+      border-radius: 6px;
+    }
+
+    .peg.left {
+      left: calc(50% - 76px);
+      top: 4px;
+      transform: rotate(-6deg);
+    }
+
+    .peg.right {
+      right: calc(50% - 76px);
+      top: 15px;
+      transform: rotate(6deg);
+    }
+
+    .head-pillar {
+      width: 48px;
+      height: 100%;
+      background: linear-gradient(90deg, #2a1409 0%, #68361c 38%, #7d4426 52%, #341a0d 100%);
+      border-radius: 8px 8px 0 0;
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      border-bottom: none;
+      position: relative;
+    }
+
+    .khu-nhi {
+      position: absolute;
+      bottom: 0;
+      left: -4px;
+      right: -4px;
+      height: 8px;
+      background: linear-gradient(90deg, #991b1b, #ef4444, #991b1b);
+      border-radius: 4px;
+      box-shadow: 0 2px 6px rgba(0, 0, 0, 0.6);
+    }
+
+    /* Interactive Neck (Cần đàn) */
+    .neck-container {
+      flex: 1;
+      width: 100%;
+      min-height: 0;
+      position: relative;
+      display: flex;
+      justify-content: center;
+      touch-action: none;
+      cursor: pointer;
+    }
+
+    .neck-wood {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 68px;
+      background: linear-gradient(90deg, #241108 0%, #5b3019 30%, #733e22 50%, #4b2613 78%, #200f07 100%);
+      box-shadow: inset 0 0 14px rgba(0,0,0,0.55), 0 0 24px rgba(0,0,0,0.65);
+      border-left: 1px solid rgba(253, 230, 138, 0.14);
+      border-right: 1px solid rgba(253, 230, 138, 0.14);
+      pointer-events: none;
+    }
+
+    /* Two Strings */
+    .strings-layer {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 56px;
+      pointer-events: none;
+      z-index: 5;
+    }
+
+    .string-line {
+      position: absolute;
+      top: 0;
+      bottom: 0;
+      transform: translateX(-50%);
+      border-radius: 99px;
+      transition: filter 0.1s ease;
+    }
+
+    .string-line.inner {
+      left: 34%;
+      width: 3.2px;
+      background: linear-gradient(90deg, #92400e, #fcd34d, #b45309);
+      box-shadow: 0 0 4px rgba(0,0,0,0.8);
+    }
+
+    .string-line.outer {
+      left: 66%;
+      width: 2.2px;
+      background: linear-gradient(90deg, #94a3b8, #f8fafc, #64748b);
+      box-shadow: 0 0 4px rgba(0,0,0,0.8);
+    }
+
+    .string-line.vibrating.inner {
+      animation: vibrate 0.055s infinite linear;
+      box-shadow: 0 0 12px var(--inner-color), 0 0 4px #fff;
+    }
+
+    .string-line.vibrating.outer {
+      animation: vibrate 0.045s infinite linear;
+      box-shadow: 0 0 12px var(--outer-color), 0 0 4px #fff;
+    }
+
+    @keyframes vibrate {
+      0%   { transform: translateX(calc(-50% - 1.6px)); }
+      50%  { transform: translateX(calc(-50% + 1.6px)); }
+      100% { transform: translateX(calc(-50% - 1.6px)); }
+    }
+
+    /* Note Markers Layer */
+    .notes-overlay {
+      position: relative;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+      z-index: 6;
+      pointer-events: none;
+    }
+
+    .note-row {
+      flex: 1;
+      display: grid;
+      grid-template-columns: 1fr 78px 1fr;
+      align-items: center;
+      position: relative;
+      border-bottom: 1px dashed rgba(253, 230, 138, 0.12);
+      transition: background 0.08s ease;
+    }
+
+    .note-row:last-child {
+      border-bottom: none;
+    }
+
+    .note-row.active-row.inner-mode {
+      background: linear-gradient(90deg, rgba(245, 158, 11, 0.22) 0%, rgba(245, 158, 11, 0.1) 50%, transparent 100%);
+    }
+
+    .note-row.active-row.outer-mode {
+      background: linear-gradient(90deg, transparent 0%, rgba(56, 189, 248, 0.1) 50%, rgba(56, 189, 248, 0.22) 100%);
+    }
+
+    .note-label {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 0 10px;
+      transition: opacity 0.15s, transform 0.1s;
+    }
+
+    .note-label.left {
+      justify-content: flex-end;
+      text-align: right;
+    }
+
+    .note-label.right {
+      justify-content: flex-start;
+      text-align: left;
+    }
+
+    .note-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 60px;
+      padding: 3px 10px;
+      border-radius: 8px;
+      font-size: 13.5px;
+      font-weight: 700;
+      background: rgba(20, 12, 8, 0.72);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #d6c5b3;
+    }
+
+    .note-badge small {
+      font-size: 10px;
+      opacity: 0.75;
+      margin-left: 4px;
+      font-weight: 500;
+    }
+
+    /* Highlight active string column */
+    .neck-container[data-string="inner"] .note-label.right {
+      opacity: 0.4;
+    }
+    .neck-container[data-string="inner"] .note-label.left .note-badge {
+      border-color: rgba(245, 158, 11, 0.45);
+      color: #fde68a;
+    }
+
+    .neck-container[data-string="outer"] .note-label.left {
+      opacity: 0.4;
+    }
+    .neck-container[data-string="outer"] .note-label.right .note-badge {
+      border-color: rgba(56, 189, 248, 0.45);
+      color: #bae6fd;
+    }
+
+    /* Active pressed note badge */
+    .note-row.active-row.inner-mode .note-label.left .note-badge {
+      background: var(--inner-color);
+      color: #140c08;
+      border-color: #fff;
+      transform: scale(1.08);
+      box-shadow: 0 0 12px var(--amber-glow);
+    }
+
+    .note-row.active-row.outer-mode .note-label.right .note-badge {
+      background: var(--outer-color);
+      color: #08121a;
+      border-color: #fff;
+      transform: scale(1.08);
+      box-shadow: 0 0 12px rgba(56, 189, 248, 0.5);
+    }
+
+    .fret-center {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      height: 100%;
+    }
+
+    .fret-dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: rgba(253, 230, 138, 0.35);
+      border: 1px solid rgba(255, 255, 255, 0.25);
+    }
+
+    .note-row.is-open .fret-dot {
+      width: 44px;
+      height: 4px;
+      border-radius: 2px;
+      background: var(--gold);
+    }
+
+    .note-row.is-octave .fret-dot {
+      width: 11px;
+      height: 11px;
+      background: var(--gold);
+      box-shadow: 0 0 6px rgba(234, 179, 8, 0.6);
+    }
+
+    /* Finger touch indicator */
+    .finger-cursor {
+      position: absolute;
+      left: 50%;
+      width: 32px;
+      height: 32px;
+      border-radius: 50%;
+      transform: translate(-50%, -50%);
+      pointer-events: none;
+      z-index: 10;
+      display: none;
+      border: 2px solid #fff;
+    }
+
+    .finger-cursor.visible {
+      display: block;
+    }
+
+    .finger-cursor.inner {
+      background: radial-gradient(circle, rgba(253, 224, 71, 0.9) 0%, rgba(245, 158, 11, 0.35) 70%);
+      box-shadow: 0 0 16px var(--inner-color);
+    }
+
+    .finger-cursor.outer {
+      background: radial-gradient(circle, rgba(186, 230, 253, 0.9) 0%, rgba(56, 189, 248, 0.35) 70%);
+      box-shadow: 0 0 16px var(--outer-color);
+    }
+
+    /* Soundbox (Bát nhị) & Bow */
+    .soundbox-area {
+      width: 100%;
+      height: 44px;
+      position: relative;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      flex-shrink: 0;
+      pointer-events: none;
+      margin-top: 2px;
+    }
+
+    .bat-nhi {
+      width: 116px;
+      height: 40px;
+      border-radius: 14px 14px 20px 20px;
+      background: radial-gradient(circle at 50% 45%, #854d27 0%, #451a03 68%, #270e02 100%);
+      border: 2px solid rgba(253, 230, 138, 0.35);
+      box-shadow: 0 4px 16px rgba(0, 0, 0, 0.75);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .bat-nhi::before {
+      content: "";
+      position: absolute;
+      inset: 4px;
+      border-radius: 10px;
+      opacity: 0.28;
+      background-image: radial-gradient(#fde68a 1.2px, transparent 1.2px), radial-gradient(#000 1.2px, transparent 1.2px);
+      background-size: 8px 8px;
+      background-position: 0 0, 4px 4px;
+    }
+
+    .ngan-nhi {
+      width: 16px;
+      height: 7px;
+      background: #fef3c7;
+      border-radius: 3px;
+      z-index: 2;
+      box-shadow: 0 1px 3px rgba(0,0,0,0.8);
+    }
+
+    .bow-stick {
+      position: absolute;
+      top: 10px;
+      left: 10%;
+      right: 10%;
+      height: 4px;
+      background: linear-gradient(90deg, transparent 0%, #d97706 15%, #fef3c7 50%, #d97706 85%, transparent 100%);
+      border-radius: 99px;
+      opacity: 0.45;
+      transition: opacity 0.15s;
+    }
+
+    .bow-stick.bowing {
+      opacity: 1;
+      animation: bowSlide 0.75s ease-in-out infinite alternate;
+    }
+
+    @keyframes bowSlide {
+      0%   { transform: translateX(-16px); }
+      100% { transform: translateX(16px); }
+    }
+
+    /* Bottom Two Bow Buttons */
+    .bow-controls {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 10px;
+      padding-top: 6px;
+      flex-shrink: 0;
+      z-index: 20;
+    }
+
+    .bow-btn {
+      position: relative;
+      height: 82px;
+      border-radius: 16px;
+      border: 2px solid rgba(255, 255, 255, 0.15);
+      background: linear-gradient(180deg, rgba(48, 28, 16, 0.95) 0%, rgba(24, 14, 8, 0.98) 100%);
+      color: var(--ivory);
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 3px;
+      touch-action: none;
+      cursor: pointer;
+      box-shadow: 0 6px 16px rgba(0, 0, 0, 0.5), inset 0 1px 0 rgba(255, 255, 255, 0.12);
+      transition: transform 0.06s, border-color 0.12s, box-shadow 0.12s;
+      overflow: hidden;
+    }
+
+    .bow-btn.inner { border-color: rgba(245, 158, 11, 0.45); }
+    .bow-btn.outer { border-color: rgba(56, 189, 248, 0.45); }
+
+    .bow-btn.selected.inner {
+      background: linear-gradient(180deg, rgba(120, 53, 15, 0.75) 0%, rgba(42, 20, 8, 0.95) 100%);
+      border-color: var(--inner-color);
+    }
+
+    .bow-btn.selected.outer {
+      background: linear-gradient(180deg, rgba(12, 74, 110, 0.65) 0%, rgba(15, 23, 42, 0.95) 100%);
+      border-color: var(--outer-color);
+    }
+
+    .bow-btn.active.inner {
+      transform: scale(0.97);
+      background: linear-gradient(180deg, #b45309 0%, #78350f 100%);
+      border-color: #fde047;
+      box-shadow: 0 0 22px var(--amber-glow), inset 0 0 12px rgba(255, 255, 255, 0.2);
+    }
+
+    .bow-btn.active.outer {
+      transform: scale(0.97);
+      background: linear-gradient(180deg, #0284c7 0%, #075985 100%);
+      border-color: #bae6fd;
+      box-shadow: 0 0 22px rgba(56, 189, 248, 0.55), inset 0 0 12px rgba(255, 255, 255, 0.2);
+    }
+
+    .bow-btn-title {
+      font-size: 15px;
+      font-weight: 800;
+      letter-spacing: 0.4px;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+    }
+
+    .bow-btn.inner .bow-btn-title { color: #fde68a; }
+    .bow-btn.outer .bow-btn-title { color: #bae6fd; }
+    .bow-btn.active .bow-btn-title { color: #ffffff; }
+
+    .bow-btn-sub {
+      font-size: 12px;
+      opacity: 0.85;
+      font-weight: 500;
+    }
+
+    .bow-btn-hint {
+      font-size: 10px;
+      opacity: 0.6;
+      text-transform: uppercase;
+      letter-spacing: 0.6px;
+    }
+
+    /* Modal Settings / Guide */
+    .modal-backdrop {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.72);
+      backdrop-filter: blur(4px);
+      display: none;
+      align-items: center;
+      justify-content: center;
+      padding: 16px;
+      z-index: 100;
+    }
+
+    .modal-backdrop.open { display: flex; }
+
+    .modal-card {
+      width: 100%;
+      max-width: 400px;
+      background: #23140c;
+      border: 1px solid rgba(253, 230, 138, 0.3);
+      border-radius: 18px;
+      padding: 18px;
+      color: var(--ivory);
+      box-shadow: 0 20px 40px rgba(0, 0, 0, 0.7);
+    }
+
+    .modal-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 12px;
+    }
+
+    .modal-header h2 {
+      margin: 0;
+      font-size: 17px;
+      color: var(--gold-soft);
+    }
+
+    .close-btn {
+      background: none;
+      border: none;
+      color: #cbb8a6;
+      font-size: 22px;
+      cursor: pointer;
+      padding: 0 6px;
+    }
+
+    .setting-group {
+      margin-bottom: 14px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+    }
+
+    .setting-label {
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--gold-soft);
+      margin-bottom: 8px;
+      display: block;
+    }
+
+    .segmented {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+    }
+
+    .seg-btn {
+      padding: 7px 4px;
+      font-size: 12px;
+      font-weight: 600;
+      border-radius: 8px;
+      background: rgba(255, 255, 255, 0.06);
+      border: 1px solid rgba(255, 255, 255, 0.12);
+      color: #d6c5b3;
+      cursor: pointer;
+    }
+
+    .seg-btn.active {
+      background: rgba(234, 179, 8, 0.25);
+      border-color: var(--gold);
+      color: #fff;
+    }
+
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-top: 10px;
+      font-size: 13px;
+    }
+
+    .guide-list {
+      margin: 8px 0 0;
+      padding-left: 18px;
+      font-size: 12.5px;
+      line-height: 1.5;
+      color: #dfd0c0;
+    }
+
+    .guide-list li { margin-bottom: 6px; }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Top Header -->
+    <header class="header">
+      <div class="brand">
+        <div>
+          <div class="brand-title">Đàn Cò (Đàn Nhị)</div>
+          <div class="brand-sub" id="tuningDisplay">Dây Hò - Xê (Âm chuẩn)</div>
+        </div>
+      </div>
+      <div class="header-controls">
+        <button class="pill-btn" id="scaleCycleBtn" title="Đổi thang âm hiển thị">
+          Thang: <span id="scaleNameLabel">Ngũ cung</span>
+        </button>
+        <button class="pill-btn active" id="vibratoBtn">Rung</button>
+        <button class="icon-btn" id="helpBtn" aria-label="Cài đặt và hướng dẫn">⚙</button>
+      </div>
+    </header>
+
+    <!-- Live Status HUD -->
+    <div class="hud-bar">
+      <div class="hud-status">
+        <span class="status-dot" id="statusDot"></span>
+        <span id="statusText">Giữ nút dây bên dưới để kéo, hoặc chạm nốt trên cần đàn</span>
+      </div>
+      <div class="hud-note" id="hudNote">—</div>
+    </div>
+
+    <!-- Center: Instrument Neck & Note Positions -->
+    <main class="instrument-stage">
+      <div class="headstock">
+        <div class="peg left"></div>
+        <div class="peg right"></div>
+        <div class="head-pillar">
+          <div class="khu-nhi" title="Khữ nhị"></div>
+        </div>
+      </div>
+
+      <div class="neck-container" id="neck" data-string="inner">
+        <div class="neck-wood"></div>
+        <div class="strings-layer">
+          <div class="string-line inner" id="stringInner"></div>
+          <div class="string-line outer" id="stringOuter"></div>
+        </div>
+        <div class="notes-overlay" id="notesOverlay"></div>
+        <div class="finger-cursor" id="fingerCursor"></div>
+      </div>
+
+      <!-- Soundbox (Bát Nhị) & Bow Visual -->
+      <div class="soundbox-area">
+        <div class="bow-stick" id="bowStick"></div>
+        <div class="bat-nhi">
+          <div class="ngan-nhi"></div>
+        </div>
+      </div>
+    </main>
+
+    <!-- Bottom: Two Buttons for Inner vs Outer String Bowing -->
+    <footer class="bow-controls">
+      <button class="bow-btn inner selected" id="bowInnerBtn" type="button">
+        <div class="bow-btn-title">◀ KÉO DÂY TRONG</div>
+        <div class="bow-btn-sub" id="innerSubLabel">Dây trầm • Buông: Hò</div>
+        <div class="bow-btn-hint">Giữ để kéo vĩ</div>
+      </button>
+
+      <button class="bow-btn outer" id="bowOuterBtn" type="button">
+        <div class="bow-btn-title">KÉO DÂY NGOÀI ▶</div>
+        <div class="bow-btn-sub" id="outerSubLabel">Dây thanh • Buông: Xê</div>
+        <div class="bow-btn-hint">Giữ để kéo vĩ</div>
+      </button>
+    </footer>
+  </div>
+
+  <!-- Settings & Instructions Modal -->
+  <div class="modal-backdrop" id="modalBackdrop">
+    <div class="modal-card">
+      <div class="modal-header">
+        <h2>Cài đặt & Cách chơi</h2>
+        <button class="close-btn" id="closeModalBtn">&times;</button>
+      </div>
+
+      <div class="setting-group">
+        <span class="setting-label">Thang âm cổ truyền trên cần đàn</span>
+        <div class="segmented" id="scaleModeGroup">
+          <button class="seg-btn active" data-mode="pentatonic">Ngũ cung (6 nấc)</button>
+          <button class="seg-btn" data-mode="basic">Thất cung (8 nấc)</button>
+          <button class="seg-btn" data-mode="free">Tự do (Vuốt)</button>
+        </div>
+      </div>
+
+      <div class="setting-group">
+        <span class="setting-label">Cao độ lên dây (Hò - Xê)</span>
+        <div class="segmented" style="grid-template-columns: 1fr 1fr;" id="tuningGroup">
+          <button class="seg-btn active" data-tuning="CG">Dây Hò chuẩn (Trầm)</button>
+          <button class="seg-btn" data-tuning="DA">Dây Hò cao (+1 cung)</button>
+        </div>
+        <label class="toggle-row">
+          <span>Chạm trực tiếp cần đàn tự phát tiếng (1 tay)</span>
+          <input type="checkbox" id="tapToPlayCheck" checked />
+        </label>
+      </div>
+
+      <div>
+        <span class="setting-label">Hệ thống chữ nhạc cổ truyền</span>
+        <ul class="guide-list">
+          <li><strong>Ngũ cung chính:</strong> Hò – Xự – Xàng – Xê – Cống – Liêu – Ú – Xáng – Xế.</li>
+          <li><strong>Âm phụ (Thất cung):</strong> Xư, Y (giữa Xự &amp; Xàng); Oán, Phàn (giữa Cống &amp; Liêu).</li>
+          <li><strong>Cách chơi 2 tay:</strong> 1 ngón giữ nút <em>Kéo Dây Trong (Hò)</em> hoặc <em>Dây Ngoài (Xê)</em> ở dưới; tay kia bấm hoặc vuốt trên cần đàn.</li>
+          <li><strong>Ngân / Rung dây:</strong> Lắc nhẹ ngón tay sang trái/phải khi đang bấm nốt để ngân tiếng éo on đặc trưng.</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    (() => {
+      // --- Bảng chữ nhạc cổ truyền Việt Nam theo từng nửa cung tính từ dây buông Hò (0) ---
+      // Dây Trong = Hò (0), Dây Ngoài = Xê (+7 nửa cung - quãng 5 đúng)
+      const TRAD_NOTES = [
+        { name: 'Hò',    sub: 'Buông' }, // 0
+        { name: 'Hò+',   sub: '' },      // 1
+        { name: 'Xự',    sub: '' },      // 2
+        { name: 'Xư',    sub: 'Ai' },    // 3
+        { name: 'Y',     sub: '' },      // 4
+        { name: 'Xàng',  sub: '' },      // 5
+        { name: 'Xàng+', sub: '' },      // 6
+        { name: 'Xê',    sub: '' },      // 7
+        { name: 'Xê+',   sub: '' },      // 8
+        { name: 'Cống',  sub: '' },      // 9
+        { name: 'Oán',   sub: '' },      // 10
+        { name: 'Phàn',  sub: '' },      // 11
+        { name: 'Liêu',  sub: 'Bát độ' },// 12
+        { name: 'Liêu+', sub: '' },      // 13
+        { name: 'Ú',     sub: '' },      // 14
+        { name: 'Xứ',    sub: '' },      // 15
+        { name: 'Ý',     sub: '' },      // 16
+        { name: 'Xáng',  sub: '' },      // 17
+        { name: 'Xáng+', sub: '' },      // 18
+        { name: 'Xế',    sub: 'Bát độ' },// 19
+        { name: 'Xế+',   sub: '' },      // 20
+        { name: 'Cộng',  sub: 'Cao' },   // 21
+        { name: 'Oán\'', sub: 'Cao' },   // 22
+        { name: 'Phạn',  sub: 'Cao' },   // 23
+        { name: 'Líu',   sub: 'Cao' }    // 24
+      ];
+
+      const TUNINGS = {
+        CG: {
+          label: 'Dây Hò - Xê (Âm chuẩn)',
+          innerMidi: 60, // C4 -> Hò
+          outerMidi: 67  // G4 -> Xê
+        },
+        DA: {
+          label: 'Dây Hò - Xê (Âm cao)',
+          innerMidi: 62, // D4 -> Hò
+          outerMidi: 69  // A4 -> Xê
+        }
+      };
+
+      // Các nấc bấm theo nửa cung từ 0 đến 12
+      const SCALE_MODES = {
+        pentatonic: {
+          name: 'Ngũ cung',
+          // Trong: Hò, Xự, Xàng, Xê, Cống, Liêu
+          // Ngoài: Xê, Cống, Liêu, Ú, Ý, Xế
+          steps: [0, 2, 5, 7, 9, 12],
+          continuous: false
+        },
+        basic: {
+          name: 'Thất cung',
+          // Trong: Hò, Xự, Y, Xàng, Xê, Cống, Oán, Liêu
+          // Ngoài: Xê, Cống, Phàn, Liêu, Ú, Ý, Xáng, Xế
+          steps: [0, 2, 4, 5, 7, 9, 10, 12],
+          continuous: false
+        },
+        free: {
+          name: 'Tự do',
+          steps: [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12],
+          continuous: true
+        }
+      };
+
+      function midiToFreq(midi) {
+        return 440 * Math.pow(2, (midi - 69) / 12);
+      }
+
+      function getTradNoteInfo(semitonesFromInner) {
+        const idx = Math.max(0, Math.min(TRAD_NOTES.length - 1, Math.round(semitonesFromInner)));
+        return TRAD_NOTES[idx];
+      }
+
+      // --- App State ---
+      const state = {
+        tuning: 'CG',
+        scaleMode: 'pentatonic',
+        activeString: 'inner',
+        vibratoEnabled: true,
+        tapToPlay: true,
+        currentSemitones: 0
+      };
+
+      const bowPointers = new Map();
+      const neckPointers = new Map();
+
+      // --- Web Audio API Synthesizer ---
+      class DanNhiSynth {
+        constructor() {
+          this.ctx = null;
+          this.isPlaying = false;
+          this.masterGain = null;
+          this.oscMain = null;
+          this.oscFund = null;
+          this.oscHarm = null;
+          this.lfo = null;
+          this.lfoGain = null;
+          this.lowpass = null;
+          this.formant1 = null;
+          this.formant2 = null;
+          this.noiseNode = null;
+          this.noiseGain = null;
+        }
+
+        ensureContext() {
+          if (!this.ctx) {
+            const AudioCtx = window.AudioContext || window.webkitAudioContext;
+            this.ctx = new AudioCtx();
+            this._buildGraph();
+          }
+          if (this.ctx.state === 'suspended') {
+            this.ctx.resume();
+          }
+        }
+
+        _buildGraph() {
+          const ctx = this.ctx;
+
+          this.masterGain = ctx.createGain();
+          this.masterGain.gain.value = 0;
+
+          this.lowpass = ctx.createBiquadFilter();
+          this.lowpass.type = 'lowpass';
+          this.lowpass.frequency.value = 2200;
+          this.lowpass.Q.value = 1.1;
+
+          this.formant1 = ctx.createBiquadFilter();
+          this.formant1.type = 'peaking';
+          this.formant1.frequency.value = 920;
+          this.formant1.Q.value = 2.6;
+          this.formant1.gain.value = 6.5;
+
+          this.formant2 = ctx.createBiquadFilter();
+          this.formant2.type = 'peaking';
+          this.formant2.frequency.value = 2150;
+          this.formant2.Q.value = 2.2;
+          this.formant2.gain.value = 4.0;
+
+          this.oscMain = ctx.createOscillator();
+          this.oscMain.type = 'sawtooth';
+          const mainGain = ctx.createGain();
+          mainGain.gain.value = 0.55;
+
+          this.oscFund = ctx.createOscillator();
+          this.oscFund.type = 'sine';
+          const fundGain = ctx.createGain();
+          fundGain.gain.value = 0.42;
+
+          this.oscHarm = ctx.createOscillator();
+          this.oscHarm.type = 'triangle';
+          const harmGain = ctx.createGain();
+          harmGain.gain.value = 0.16;
+
+          this.lfo = ctx.createOscillator();
+          this.lfo.type = 'sine';
+          this.lfo.frequency.value = 5.3;
+          this.lfoGain = ctx.createGain();
+          this.lfoGain.gain.value = 0;
+
+          this.lfo.connect(this.lfoGain);
+          this.lfoGain.connect(this.oscMain.frequency);
+          this.lfoGain.connect(this.oscFund.frequency);
+
+          const bufferSize = ctx.sampleRate * 1.5;
+          const noiseBuffer = ctx.createBuffer(1, bufferSize, ctx.sampleRate);
+          const data = noiseBuffer.getChannelData(0);
+          for (let i = 0; i < bufferSize; i++) {
+            data[i] = Math.random() * 2 - 1;
+          }
+          this.noiseNode = ctx.createBufferSource();
+          this.noiseNode.buffer = noiseBuffer;
+          this.noiseNode.loop = true;
+
+          const noiseFilter = ctx.createBiquadFilter();
+          noiseFilter.type = 'bandpass';
+          noiseFilter.frequency.value = 2800;
+          noiseFilter.Q.value = 2.0;
+
+          this.noiseGain = ctx.createGain();
+          this.noiseGain.gain.value = 0.018;
+
+          this.oscMain.connect(mainGain);
+          this.oscFund.connect(fundGain);
+          this.oscHarm.connect(harmGain);
+
+          mainGain.connect(this.lowpass);
+          fundGain.connect(this.lowpass);
+          harmGain.connect(this.lowpass);
+
+          this.noiseNode.connect(noiseFilter);
+          noiseFilter.connect(this.noiseGain);
+          this.noiseGain.connect(this.lowpass);
+
+          this.lowpass.connect(this.formant1);
+          this.formant1.connect(this.formant2);
+          this.formant2.connect(this.masterGain);
+          this.masterGain.connect(ctx.destination);
+
+          this.oscMain.start();
+          this.oscFund.start();
+          this.oscHarm.start();
+          this.lfo.start();
+          this.noiseNode.start();
+        }
+
+        updateSound(freq, stringType, vibratoOn, manualVibCents = 0) {
+          this.ensureContext();
+          const ctx = this.ctx;
+          const now = ctx.currentTime;
+
+          const effectiveFreq = freq * Math.pow(2, manualVibCents / 1200);
+          const glide = this.isPlaying ? 0.016 : 0.002;
+          this.oscMain.frequency.setTargetAtTime(effectiveFreq, now, glide);
+          this.oscFund.frequency.setTargetAtTime(effectiveFreq, now, glide);
+          this.oscHarm.frequency.setTargetAtTime(effectiveFreq * 2, now, glide);
+
+          if (stringType === 'inner') {
+            this.lowpass.frequency.setTargetAtTime(Math.min(3200, Math.max(1300, freq * 4.5)), now, 0.04);
+            this.formant1.frequency.setTargetAtTime(820, now, 0.04);
+            this.formant2.gain.setTargetAtTime(3.0, now, 0.04);
+          } else {
+            this.lowpass.frequency.setTargetAtTime(Math.min(4400, Math.max(1800, freq * 5.2)), now, 0.04);
+            this.formant1.frequency.setTargetAtTime(1080, now, 0.04);
+            this.formant2.gain.setTargetAtTime(5.5, now, 0.04);
+          }
+
+          const vibDepth = vibratoOn ? freq * 0.011 : 0;
+          this.lfoGain.gain.setTargetAtTime(vibDepth, now, 0.15);
+
+          if (!this.isPlaying) {
+            this.isPlaying = true;
+            this.masterGain.gain.cancelScheduledValues(now);
+            this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+            this.masterGain.gain.linearRampToValueAtTime(0.36, now + 0.065);
+          }
+        }
+
+        stop() {
+          if (!this.ctx || !this.isPlaying) return;
+          const now = this.ctx.currentTime;
+          this.isPlaying = false;
+          this.masterGain.gain.cancelScheduledValues(now);
+          this.masterGain.gain.setValueAtTime(this.masterGain.gain.value, now);
+          this.masterGain.gain.linearRampToValueAtTime(0, now + 0.11);
+        }
+      }
+
+      const synth = new DanNhiSynth();
+
+      // --- DOM References ---
+      const neckEl = document.getElementById('neck');
+      const notesOverlay = document.getElementById('notesOverlay');
+      const fingerCursor = document.getElementById('fingerCursor');
+      const stringInnerEl = document.getElementById('stringInner');
+      const stringOuterEl = document.getElementById('stringOuter');
+      const bowStickEl = document.getElementById('bowStick');
+      const bowInnerBtn = document.getElementById('bowInnerBtn');
+      const bowOuterBtn = document.getElementById('bowOuterBtn');
+      const tuningDisplay = document.getElementById('tuningDisplay');
+      const scaleNameLabel = document.getElementById('scaleNameLabel');
+      const scaleCycleBtn = document.getElementById('scaleCycleBtn');
+      const vibratoBtn = document.getElementById('vibratoBtn');
+      const statusDot = document.getElementById('statusDot');
+      const statusText = document.getElementById('statusText');
+      const hudNote = document.getElementById('hudNote');
+
+      const modalBackdrop = document.getElementById('modalBackdrop');
+      const helpBtn = document.getElementById('helpBtn');
+      const closeModalBtn = document.getElementById('closeModalBtn');
+      const scaleModeGroup = document.getElementById('scaleModeGroup');
+      const tuningGroup = document.getElementById('tuningGroup');
+      const tapToPlayCheck = document.getElementById('tapToPlayCheck');
+
+      // --- Render Neck Note Positions ---
+      function renderNeckNotes() {
+        const tuning = TUNINGS[state.tuning];
+        const mode = SCALE_MODES[state.scaleMode];
+        notesOverlay.innerHTML = '';
+
+        mode.steps.forEach((step) => {
+          const innerInfo = getTradNoteInfo(step);
+          const outerInfo = getTradNoteInfo(step + 7);
+
+          const row = document.createElement('div');
+          row.className = 'note-row';
+          row.dataset.step = step;
+          if (step === 0) row.classList.add('is-open');
+          if (step === 12) row.classList.add('is-octave');
+
+          const innerTag = step === 0 ? '<small>(Buông)</small>' : (innerInfo.sub ? `<small>${innerInfo.sub}</small>` : '');
+          const outerTag = step === 0 ? '<small>(Buông)</small>' : (outerInfo.sub ? `<small>${outerInfo.sub}</small>` : '');
+
+          row.innerHTML = `
+            <div class="note-label left">
+              <span class="note-badge">${innerInfo.name}${innerTag}</span>
+            </div>
+            <div class="fret-center">
+              <div class="fret-dot"></div>
+            </div>
+            <div class="note-label right">
+              <span class="note-badge">${outerInfo.name}${outerTag}</span>
+            </div>
+          `;
+
+          notesOverlay.appendChild(row);
+        });
+
+        tuningDisplay.textContent = tuning.label;
+        scaleNameLabel.textContent = mode.name;
+      }
+
+      // --- Pitch & Active State Resolution ---
+      function getLowestNeckPointer() {
+        if (neckPointers.size === 0) return null;
+        let lowest = null;
+        for (const p of neckPointers.values()) {
+          if (!lowest || p.yRatio > lowest.yRatio) {
+            lowest = p;
+          }
+        }
+        return lowest;
+      }
+
+      function computeYRatioFromClientY(clientY) {
+        const rect = neckEl.getBoundingClientRect();
+        const clamped = Math.max(0, Math.min(rect.height - 1, clientY - rect.top));
+        return clamped / rect.height;
+      }
+
+      function yRatioToSemitones(yRatio) {
+        const mode = SCALE_MODES[state.scaleMode];
+        if (mode.continuous) {
+          const totalRows = mode.steps.length;
+          const scaled = (yRatio * totalRows - 0.5) / (totalRows - 1);
+          return Math.max(0, Math.min(12, scaled * 12));
+        } else {
+          const idx = Math.min(mode.steps.length - 1, Math.max(0, Math.floor(yRatio * mode.steps.length)));
+          return mode.steps[idx];
+        }
+      }
+
+      function updateAudioAndVisuals() {
+        const hasBowTouch = bowPointers.size > 0;
+        const neckPointer = getLowestNeckPointer();
+        const shouldPlay = hasBowTouch || (state.tapToPlay && neckPointer !== null);
+
+        const semitones = neckPointer ? neckPointer.semitones : 0;
+        state.currentSemitones = semitones;
+
+        const manualVibCents = neckPointer
+          ? Math.max(-45, Math.min(45, (neckPointer.xCurrent - neckPointer.xStart) * 0.9))
+          : 0;
+
+        neckEl.setAttribute('data-string', state.activeString);
+        bowInnerBtn.classList.toggle('selected', state.activeString === 'inner');
+        bowOuterBtn.classList.toggle('selected', state.activeString === 'outer');
+
+        bowInnerBtn.classList.toggle('active', Array.from(bowPointers.values()).includes('inner') || (shouldPlay && state.activeString === 'inner'));
+        bowOuterBtn.classList.toggle('active', Array.from(bowPointers.values()).includes('outer') || (shouldPlay && state.activeString === 'outer'));
+
+        const rows = notesOverlay.querySelectorAll('.note-row');
+        const closestStep = Math.round(semitones);
+        rows.forEach((row) => {
+          const step = Number(row.dataset.step);
+          const isMatch = shouldPlay && (
+            SCALE_MODES[state.scaleMode].continuous ? step === closestStep : step === semitones
+          );
+          row.classList.toggle('active-row', isMatch);
+          row.classList.toggle('inner-mode', isMatch && state.activeString === 'inner');
+          row.classList.toggle('outer-mode', isMatch && state.activeString === 'outer');
+        });
+
+        if (neckPointer) {
+          fingerCursor.classList.add('visible');
+          fingerCursor.classList.toggle('inner', state.activeString === 'inner');
+          fingerCursor.classList.toggle('outer', state.activeString === 'outer');
+          fingerCursor.style.top = `${neckPointer.yRatio * 100}%`;
+        } else {
+          fingerCursor.classList.remove('visible');
+        }
+
+        stringInnerEl.classList.toggle('vibrating', shouldPlay && state.activeString === 'inner');
+        stringOuterEl.classList.toggle('vibrating', shouldPlay && state.activeString === 'outer');
+        bowStickEl.classList.toggle('bowing', shouldPlay);
+
+        if (shouldPlay) {
+          const tuning = TUNINGS[state.tuning];
+          const baseMidi = state.activeString === 'inner' ? tuning.innerMidi : tuning.outerMidi;
+          const midi = baseMidi + semitones;
+          const freq = midiToFreq(midi);
+          synth.updateSound(freq, state.activeString, state.vibratoEnabled, manualVibCents);
+
+          const offsetFromHo = state.activeString === 'inner' ? semitones : semitones + 7;
+          const tradInfo = getTradNoteInfo(offsetFromHo);
+          const stringLabel = state.activeString === 'inner' ? 'Dây Trong (Hò)' : 'Dây Ngoài (Xê)';
+          const buongLabel = semitones < 0.25 ? ' • Buông' : '';
+
+          statusDot.className = `status-dot ${state.activeString === 'inner' ? 'playing-inner' : 'playing-outer'}`;
+          statusText.textContent = `Đang kéo ${stringLabel}${buongLabel}`;
+          hudNote.textContent = tradInfo.name;
+        } else {
+          synth.stop();
+          statusDot.className = 'status-dot';
+          statusText.textContent = state.tapToPlay
+            ? 'Giữ nút dây bên dưới để kéo, hoặc chạm nốt trên cần đàn'
+            : 'Giữ nút Dây Trong / Ngoài ở dưới để kéo, tay kia bấm cần đàn';
+          hudNote.textContent = '—';
+        }
+      }
+
+      // --- Pointer Events: Bow Buttons ---
+      function attachBowEvents(btn, stringType) {
+        btn.addEventListener('pointerdown', (e) => {
+          e.preventDefault();
+          synth.ensureContext();
+          btn.setPointerCapture(e.pointerId);
+          bowPointers.set(e.pointerId, stringType);
+          state.activeString = stringType;
+          updateAudioAndVisuals();
+        });
+
+        const releaseBow = (e) => {
+          if (bowPointers.has(e.pointerId)) {
+            bowPointers.delete(e.pointerId);
+            if (bowPointers.size > 0) {
+              state.activeString = Array.from(bowPointers.values())[bowPointers.size - 1];
+            }
+            updateAudioAndVisuals();
+          }
+        };
+
+        btn.addEventListener('pointerup', releaseBow);
+        btn.addEventListener('pointercancel', releaseBow);
+      }
+
+      attachBowEvents(bowInnerBtn, 'inner');
+      attachBowEvents(bowOuterBtn, 'outer');
+
+      // --- Pointer Events: Neck ---
+      neckEl.addEventListener('pointerdown', (e) => {
+        e.preventDefault();
+        synth.ensureContext();
+        neckEl.setPointerCapture(e.pointerId);
+        const yRatio = computeYRatioFromClientY(e.clientY);
+        neckPointers.set(e.pointerId, {
+          yRatio,
+          semitones: yRatioToSemitones(yRatio),
+          xStart: e.clientX,
+          xCurrent: e.clientX
+        });
+        updateAudioAndVisuals();
+      });
+
+      neckEl.addEventListener('pointermove', (e) => {
+        if (!neckPointers.has(e.pointerId)) return;
+        e.preventDefault();
+        const entry = neckPointers.get(e.pointerId);
+        const yRatio = computeYRatioFromClientY(e.clientY);
+        entry.yRatio = yRatio;
+        entry.semitones = yRatioToSemitones(yRatio);
+        entry.xCurrent = e.clientX;
+        updateAudioAndVisuals();
+      });
+
+      const releaseNeck = (e) => {
+        if (neckPointers.has(e.pointerId)) {
+          neckPointers.delete(e.pointerId);
+          updateAudioAndVisuals();
+        }
+      };
+
+      neckEl.addEventListener('pointerup', releaseNeck);
+      neckEl.addEventListener('pointercancel', releaseNeck);
+
+      // --- Top Bar Controls & Settings ---
+      const modeOrder = ['pentatonic', 'basic', 'free'];
+      scaleCycleBtn.addEventListener('click', () => {
+        const nextIdx = (modeOrder.indexOf(state.scaleMode) + 1) % modeOrder.length;
+        setScaleMode(modeOrder[nextIdx]);
+      });
+
+      function setScaleMode(mode) {
+        state.scaleMode = mode;
+        scaleModeGroup.querySelectorAll('.seg-btn').forEach((b) => {
+          b.classList.toggle('active', b.dataset.mode === mode);
+        });
+        renderNeckNotes();
+        updateAudioAndVisuals();
+      }
+
+      vibratoBtn.addEventListener('click', () => {
+        state.vibratoEnabled = !state.vibratoEnabled;
+        vibratoBtn.classList.toggle('active', state.vibratoEnabled);
+        updateAudioAndVisuals();
+      });
+
+      helpBtn.addEventListener('click', () => modalBackdrop.classList.add('open'));
+      closeModalBtn.addEventListener('click', () => modalBackdrop.classList.remove('open'));
+      modalBackdrop.addEventListener('click', (e) => {
+        if (e.target === modalBackdrop) modalBackdrop.classList.remove('open');
+      });
+
+      scaleModeGroup.addEventListener('click', (e) => {
+        const btn = e.target.closest('.seg-btn');
+        if (!btn) return;
+        setScaleMode(btn.dataset.mode);
+      });
+
+      tuningGroup.addEventListener('click', (e) => {
+        const btn = e.target.closest('.seg-btn');
+        if (!btn) return;
+        state.tuning = btn.dataset.tuning;
+        tuningGroup.querySelectorAll('.seg-btn').forEach((b) => {
+          b.classList.toggle('active', b === btn);
+        });
+        renderNeckNotes();
+        updateAudioAndVisuals();
+      });
+
+      tapToPlayCheck.addEventListener('change', () => {
+        state.tapToPlay = tapToPlayCheck.checked;
+        updateAudioAndVisuals();
+      });
+
+      window.addEventListener('blur', () => {
+        bowPointers.clear();
+        neckPointers.clear();
+        updateAudioAndVisuals();
+      });
+      document.addEventListener('visibilitychange', () => {
+        if (document.hidden) {
+          bowPointers.clear();
+          neckPointers.clear();
+          updateAudioAndVisuals();
+        }
+      });
+
+      renderNeckNotes();
+      updateAudioAndVisuals();
+    })();
+  </script>
+</body>
+</html>
